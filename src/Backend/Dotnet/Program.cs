@@ -28,7 +28,10 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 app.UseAuthorization();
-app.UseCors(MyAllowSpecificOrigins);
+ app.UseCors(x => x
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 
 //Emplopyee endpoints
 
@@ -51,6 +54,20 @@ app.MapPost("api/employees", async (AppDBContext context, Employee employee) =>
     await context.Employees.AddAsync(employee);
     await context.SaveChangesAsync();
     return Results.Created($"api/employee/{employee.Id}", employee);
+});
+
+app.MapPut("api/employees", async (AppDBContext context, Employee employee) =>
+{
+    var emp = await context.Employees.FirstOrDefaultAsync(x => x.Id == employee.Id);
+    if(emp is not null)
+    {
+        emp.Address = employee.Address;
+        emp.Username = employee.Username;
+        emp.Gender = employee.Gender;
+        emp.Company = employee.Company;
+    }
+    await context.SaveChangesAsync();
+    return Results.Ok(employee);
 });
 
 
